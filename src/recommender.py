@@ -17,6 +17,10 @@ class Song:
     valence: float
     danceability: float
     acousticness: float
+    # New audio features (defaulted so existing callers/tests stay valid)
+    instrumentalness: float = 0.0
+    speechiness: float = 0.0
+    mode: int = 1
 
 @dataclass
 class UserProfile:

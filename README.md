@@ -29,6 +29,8 @@ Some prompts to answer:
 
 You can include a simple diagram or bullet list if helpful.
 
+Real-world recommendations let data set the weights of each musical attributes by user feedback. Its a learned system where each weight are knobs and adjusted so the songs tthe users actually liked score the highest. It also has rules that gives diversity, breaks ties predictably, and filters out anything below a quality threshold. However, for this design I am hand-tuning the recommender where each song has genre, energy, mood, and acoustic scale. 
+
 ---
 
 ## Getting Started
