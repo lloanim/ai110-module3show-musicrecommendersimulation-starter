@@ -29,7 +29,10 @@ Some prompts to answer:
 
 You can include a simple diagram or bullet list if helpful.
 
-Real-world recommendations let data set the weights of each musical attributes by user feedback. Its a learned system where each weight are knobs and adjusted so the songs tthe users actually liked score the highest. It also has rules that gives diversity, breaks ties predictably, and filters out anything below a quality threshold. However, for this design I am hand-tuning the recommender where each song has genre, energy, mood, and acoustic scale. 
+Real-world recommendations let data set the weights of each musical attributes by user feedback. Its a learned system where each weight are knobs and adjusted so the songs the users actually liked score the highest. It also has rules that gives diversity, breaks ties predictably, and filters out anything below a quality threshold. However, for this design I am hand-tuning the recommender where each `Song` has genre, energy, mood, and acoustic scale. 
+The `UserProfile` will store favorite_genre, favorite_mood, target_energy, and likes_acoustic. 
+The `Recommender` will compute a score for each song by the difference in weights of each musical attribute. The forumula will be (0.35)Mood + (0.25)Genre + (0.25)Energy + (0.15)Acoustic = 1 or (+3.5) Mood, (+2.5) Genre, (0.25) Energy, (0.15) Acoustic, adds up to 10.0 but diving by 10 to get a 0-1 score. This will prioritize mood over genre and energy creating bias. 
+It will choose what songs to recommend by having those songs that match mood first, then genre, and the rest is ranked out of energy + acoustic closeness. Showing that mood prioritizing. 
 
 ---
 
@@ -73,12 +76,56 @@ You can add more tests in `tests/test_recommender.py`.
 Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
 
 ```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+# Loaded songs: 20
+# 
+# User Preferences: {'genre': 'pop', 'mood': 'happy', 'energy': 0.8} 
+# 
+# 
+# ============================================================
+#                     TOP RECOMMENDATIONS                     
+# ============================================================
+# 
+# 1. Sunrise City — Neon Echo
+#    Score: 0.97
+#    Reasons:
+#      • mood match (+3.5)
+#      • genre match (+2.5)
+#      • energy fit (+2.5)
+#      • non-acoustic match (+1.2)
+# 
+# 2. Rooftop Lights — Indigo Parade
+#    Score: 0.69
+#    Reasons:
+#      • mood match (+3.5)
+#      • genre mismatch (+0.0)
+#      • energy fit (+2.4)
+#      • non-acoustic match (+1.0)
+# 
+# 3. Gym Hero — Max Pulse
+#    Score: 0.61
+#    Reasons:
+#      • mood mismatch (+0.0)
+#      • genre match (+2.5)
+#      • energy fit (+2.2)
+#      • non-acoustic match (+1.4)
+# 
+# 4. Concrete Kings — Blockwise
+#    Score: 0.38
+#    Reasons:
+#      • mood mismatch (+0.0)
+#      • genre mismatch (+0.0)
+#      • energy fit (+2.5)
+#      • non-acoustic match (+1.3)
+# 
+# 5. Storm Runner — Voltline
+#    Score: 0.36
+#    Reasons:
+#      • mood mismatch (+0.0)
+#      • genre mismatch (+0.0)
+#      • energy fit (+2.2)
+#      • non-acoustic match (+1.4)
+# 
+# ============================================================
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
