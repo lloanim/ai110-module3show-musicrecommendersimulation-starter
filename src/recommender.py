@@ -1,6 +1,6 @@
 import csv
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 @dataclass
 class Song:
@@ -18,10 +18,6 @@ class Song:
     valence: float
     danceability: float
     acousticness: float
-    # New audio features (defaulted so existing callers/tests stay valid)
-    instrumentalness: float = 0.0
-    speechiness: float = 0.0
-    mode: int = 1
 
 @dataclass
 class UserProfile:
@@ -42,15 +38,34 @@ class Recommender:
     def __init__(self, songs: List[Song]):
         self.songs = songs
 
+    @staticmethod
+    def _prefs_from_user(user: UserProfile) -> Dict:
+        """Adapts a UserProfile to the dict shape score_song() expects."""
+        return {
+            "genre": user.favorite_genre,
+            "mood": user.favorite_mood,
+            "energy": user.target_energy,
+            "likes_acoustic": user.likes_acoustic,
+        }
+
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
         """Returns the top k songs ranked for the given user profile."""
-        # TODO: Implement recommendation logic
-        return self.songs[:k]
+        prefs = self._prefs_from_user(user)
+        ranked = sorted(
+            self.songs,
+            key=lambda song: score_song(prefs, asdict(song))[0],
+            reverse=True,
+        )
+        return ranked[:k]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
         """Returns a human-readable explanation for why a song was recommended."""
-        # TODO: Implement explanation logic
-        return "Explanation placeholder"
+        prefs = self._prefs_from_user(user)
+        score, reasons = score_song(prefs, asdict(song))
+        return (
+            f"'{song.title}' by {song.artist} scored {score:.2f} — "
+            + "; ".join(reasons)
+        )
 
 def load_songs(csv_path: str) -> List[Dict]:
     """
@@ -62,7 +77,6 @@ def load_songs(csv_path: str) -> List[Dict]:
     int_fields = {"id", "tempo_bpm", "mode"}
     float_fields = {
         "energy", "valence", "danceability", "acousticness",
-        "instrumentalness", "speechiness",
     }
 
     songs: List[Dict] = []
@@ -70,10 +84,14 @@ def load_songs(csv_path: str) -> List[Dict]:
         reader = csv.DictReader(f)
         for row in reader:
             song = dict(row)
+            # Only convert columns that are actually present in the CSV, so the
+            # CSV stays the source of truth and optional features can be omitted.
             for field in int_fields:
-                song[field] = int(song[field])
+                if field in song:
+                    song[field] = int(song[field])
             for field in float_fields:
-                song[field] = float(song[field])
+                if field in song:
+                    song[field] = float(song[field])
             songs.append(song)
 
     print(f"Loaded songs: {len(songs)}")
